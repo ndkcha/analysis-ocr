@@ -19,13 +19,11 @@ train_labels = None
 train_labels_float = None
 test_label = None
 
-noOfTraining = 0
-noOfTesting = 0
 feature_space = 0
 
 
 def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
-    global img_train, img_test, noOfTraining, noOfTesting, train_labels, train_labels_float, test_label, feature_space
+    global img_train, img_test, train_labels, train_labels_float, test_label, feature_space
     noOfTraining = 0
     noOfTesting = 0
     feature_space = (sub_matrix_size * 3) + fft_no
@@ -36,7 +34,7 @@ def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
     for digit_samples in numbers:
         i = 0
         for digits in os.listdir(os.fsdecode(dir_train_data) + "/" + str(digit_samples)):
-            print("# Loading digits # %d%%\r" % ((digit_samples * 10) + i / 100), end="")
+            print("# Loading... %d%%\r" % ((digit_samples * 10) + i / 100), end="")
             ff = 0
             sf = sub_matrix_size
             tf = sub_matrix_size * 2
@@ -44,6 +42,8 @@ def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
             img = cv2.imread(os.fsdecode(dir_train_data) + "/" + str(digit_samples) + "/" + os.fsdecode(digits), 0)
             img = cv2.resize(img, img_size, interpolation=cv2.INTER_CUBIC)
             img = cv2.Canny(img, 50, 300)
+            # kernel = np.ones((5, 5), np.uint8)
+            # img = cv2.erode(img, kernel, iterations=1)
             img = cv2.bitwise_not(img)
 
             div_img = np.array(img).reshape(sub_matrix_shape)
@@ -86,11 +86,11 @@ def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
 
 
 def performKnn(k):
-    print("# training model...\r", end="")
+    print("# training...\r", end="")
     knn = cv2.ml.KNearest_create()
     knn.train(img_train, cv2.ml.ROW_SAMPLE, train_labels_float)
 
-    print("# verifying model...\r", end="")
+    print("# verifying...\r", end="")
     ret, knn_result, neighbour, dist = knn.findNearest(img_test, k)
     knn_matches = (knn_result == test_label)
     knn_correct = np.count_nonzero(knn_matches)
@@ -100,7 +100,7 @@ def performKnn(k):
 
 
 def performSVM(c, gamma):
-    print("# training model...\r", end="")
+    print("# training...\r", end="")
     svm = cv2.ml.SVM_create()
     svm.setType(cv2.ml.SVM_C_SVC)
     svm.setKernel(cv2.ml.SVM_LINEAR)
@@ -108,7 +108,7 @@ def performSVM(c, gamma):
     svm.setGamma(gamma)
     svm.train(img_train, cv2.ml.ROW_SAMPLE, train_labels)
 
-    print("# verifying model...\r", end="")
+    print("# verifying...\r", end="")
     svm_result = svm.predict(img_test)[1]
 
     svm_matches = (svm_result == test_label)
