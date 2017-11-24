@@ -1,5 +1,6 @@
 # ignore the training data
 training_data/
+__pycache__/
 
 # Mac OS X hidden files
 .DS_Store
