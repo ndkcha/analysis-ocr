@@ -41,9 +41,8 @@ def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
             feature_vector = np.zeros(feature_space)
             img = cv2.imread(os.fsdecode(dir_train_data) + "/" + str(digit_samples) + "/" + os.fsdecode(digits), 0)
             img = cv2.resize(img, img_size, interpolation=cv2.INTER_CUBIC)
-            img = cv2.Canny(img, 50, 300)
-            # kernel = np.ones((5, 5), np.uint8)
-            # img = cv2.erode(img, kernel, iterations=1)
+            kernel = np.ones((3, 3), np.uint8)
+            img = cv2.erode(img, kernel, iterations=1)
             img = cv2.bitwise_not(img)
 
             div_img = np.array(img).reshape(sub_matrix_shape)

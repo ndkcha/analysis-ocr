@@ -73,7 +73,7 @@ def preprocess_data(dim):
             print("Loading digits # %d%%\r" % ((digit_samples * 10) + i / 100), end="")
             img = cv2.imread(os.fsdecode(dir_train_data) + "/" + str(digit_samples) + "/" + os.fsdecode(digits), 0)
             img = cv2.resize(img, img_size)
-            img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            img = cv2.bitwise_not(img)
             d_img = deskewMoments(img)
             h_img = hog(d_img)
             if i < no_train_data:

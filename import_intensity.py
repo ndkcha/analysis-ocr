@@ -37,14 +37,14 @@ def preprocess_data(img_width, img_height):
             print("Loading... %d%%\r" % ((digit_samples * 10) + i / 100), end="")
             img = cv2.imread(os.fsdecode(dir_train_data) + "/" + str(digit_samples) + "/" + os.fsdecode(digits), 0)
             img = cv2.resize(img, (img_width, img_height), interpolation=cv2.INTER_CUBIC)
-            kernel = np.ones((5,5),np.uint8)
+            kernel = np.ones((3,3),np.uint8)
             img = cv2.erode(img, kernel, iterations=1)
-            thresh_img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            img = cv2.bitwise_not(img)
             if i < no_train_data:
-                img_train[noOfTraining] = np.array(thresh_img).reshape(img_width * img_height)
+                img_train[noOfTraining] = np.array(img).reshape(img_width * img_height)
                 noOfTraining += 1
             else:
-                img_test[noOfTesting] = np.array(thresh_img).reshape(img_width * img_height)
+                img_test[noOfTesting] = np.array(img).reshape(img_width * img_height)
                 noOfTesting += 1
             i += 1
 
