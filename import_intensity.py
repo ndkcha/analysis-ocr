@@ -7,13 +7,16 @@ dir_train_data = os.fsencode("training_data")
 n = 10
 # k = 5
 total_data = 1000
-no_train_data = 700
+no_train_data = 1000
 # data_width = 40
 # data_height = 34
 # c = 2.67
 # gamma = 5.383
 
 numbers = np.arange(n)
+
+width = None
+height = None
 
 img_train = None
 img_test = None
@@ -24,9 +27,11 @@ train_labels_float = None
 
 
 def preprocess_data(img_width, img_height):
-    global img_train, img_test, train_labels, test_label, train_labels_float
+    global img_train, img_test, train_labels, test_label, train_labels_float, height, width
     noOfTraining = 0
     noOfTesting = 0
+    width = img_width
+    height = img_height
 
     img_train = np.empty([no_train_data*n, img_width*img_height])
     img_test = np.empty([(total_data-no_train_data)*n, img_width*img_height])
@@ -55,6 +60,18 @@ def preprocess_data(img_width, img_height):
     test_label = np.repeat(numbers, (total_data-no_train_data))[:, np.newaxis]
 
     train_labels_float = train_labels.astype(np.float32)
+
+
+def trainKnn():
+    print("# training knn...")
+    knn = cv2.ml.KNearest_create()
+    knn.train(img_train, cv2.ml.ROW_SAMPLE, train_labels_float)
+    return knn
+
+
+def doKnn(knn, test, k):
+    knn_result = knn.findNearest(test, k)[1]
+    return knn_result
 
 
 def performKnn(k):

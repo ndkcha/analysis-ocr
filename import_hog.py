@@ -93,6 +93,25 @@ def preprocess_data(dim):
     train_labels_float = train_labels.astype(np.float32)
 
 
+def preprocess_test(img):
+    img = cv2.bitwise_not(img)
+    d_img = deskewMoments(img)
+    h_img = hog(d_img)
+    return h_img
+
+
+def trainKnn():
+    print("# training...\r", end="")
+    knn = cv2.ml.KNearest_create()
+    knn.train(img_train, cv2.ml.ROW_SAMPLE, train_labels_float)
+    return knn
+
+
+def doKnn(knn, test, k):
+    knn_result = knn.findNearest(test, k)[1]
+    return knn_result
+
+
 def performKnn(k):
     print("# training...\r", end="")
     knn = cv2.ml.KNearest_create()

@@ -18,15 +18,21 @@ img_test = None
 train_labels = None
 train_labels_float = None
 test_label = None
+sub_mat_shape = None
+sub_mat_size = 0
+fft_n = None
 
 feature_space = 0
 
 
 def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
-    global img_train, img_test, train_labels, train_labels_float, test_label, feature_space
+    global img_train, img_test, train_labels, train_labels_float, test_label, feature_space, sub_mat_shape, fft_n, sub_mat_size
     noOfTraining = 0
     noOfTesting = 0
     feature_space = (sub_matrix_size * 3) + fft_no
+    sub_mat_shape = sub_matrix_shape
+    sub_mat_size = sub_matrix_size
+    fft_n = fft_no
 
     img_train = np.empty([no_train_data * n, feature_space])
     img_test = np.empty([(total_data - no_train_data) * n, feature_space])
@@ -82,6 +88,52 @@ def preprocess_data(img_size, sub_matrix_shape, sub_matrix_size, fft_no):
     test_label = np.repeat(numbers, (total_data - no_train_data))[:, np.newaxis]
 
     train_labels_float = train_labels.astype(np.float32)
+
+
+def preprocess_test(img):
+    ff = 0
+    sf = sub_mat_size
+    tf = sub_mat_size * 2
+    kernel = np.ones((3, 3), np.uint8)
+    img = cv2.erode(img, kernel, iterations=1)
+    img = cv2.bitwise_not(img)
+
+    feature_vector = np.zeros(feature_space)
+
+    div_img = np.array(img).reshape(sub_mat_shape)
+    for sub_matrix in div_img:
+        zeros = np.where(sub_matrix != 0)
+        feature_vector[ff] = zeros[0].size
+        if feature_vector[ff] == 0:
+            continue
+        co_zeros = np.transpose(zeros)
+        mean_distance = 0.0
+        mean_angle = 0.0
+        for coordinates in co_zeros:
+            mean_distance += ((coordinates[0] ** 2) + (coordinates[1] ** 2)) ** 0.5
+            mean_angle += coordinates[0] == 0 and 90 or math.degrees(math.atan(coordinates[1] / coordinates[0]))
+        feature_vector[sf] = mean_distance / float(feature_vector[ff])
+        feature_vector[tf] = mean_angle / float(feature_vector[ff])
+        ff += 1
+        sf += 1
+        tf += 1
+
+    ff_img = np.fft.fft(np.array(img.reshape(-1)))
+    fft_img = ((ff_img.real ** 2) + (ff_img.imag ** 2)) ** 0.5
+    feature_vector[(sub_mat_size * 3):] = fft_img[:fft_n]
+    return feature_vector
+
+
+def trainKnn():
+    print("# training...\r", end="")
+    knn = cv2.ml.KNearest_create()
+    knn.train(img_train, cv2.ml.ROW_SAMPLE, train_labels_float)
+    return knn
+
+
+def doKnn(knn, test, k):
+    knn_result = knn.findNearest(test, k)[1]
+    return knn_result
 
 
 def performKnn(k):
