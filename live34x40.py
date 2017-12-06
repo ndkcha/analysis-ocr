@@ -35,7 +35,7 @@ while True:
     kernel = np.ones((3, 3), np.uint8)
     img = cv2.erode(digit, kernel, iterations=1)
     # img = cv2.bitwise_not(img)
-    thres = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY)[1]
+    thres = cv2.threshold(img, 110, 255, cv2.THRESH_BINARY)[1]
     img = cv2.bitwise_not(thres)
 
     r_img = np.array(img).reshape(-1, 34*40).astype(np.float32)
